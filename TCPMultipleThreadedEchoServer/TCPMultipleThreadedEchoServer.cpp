@@ -12,6 +12,7 @@ DWORD WINAPI ThreadProc(
 	//接收缓冲区的大小是50个字符
 	char recvBuf[51];
 	while(1){
+		memset(recvBuf, 0, 51);
 		int count =recv(AcceptSocket ,recvBuf,50,0);
 		if(count==0)break;//被对方关闭
 		if(count==SOCKET_ERROR)break;//错误count<0
@@ -23,9 +24,10 @@ DWORD WINAPI ThreadProc(
 		}
 		if(sendCount==SOCKET_ERROR)break;
 
-		printf("接收来自客户端%d的信息：%s/n",AcceptSocket,recvBuf);
+		printf("接收来自客户端%d的信息：%s\n",AcceptSocket,recvBuf);
 	}
 	//结束连接
+	printf("客户端%d断开\n", AcceptSocket);
 	closesocket(AcceptSocket);
 	return 0;
 }
@@ -78,6 +80,8 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
+	printf("Waiting client...\n");
+
 	SOCKADDR_IN addrClient;
 	int len=sizeof(SOCKADDR);
 	//以一个无限循环的方式，不停地接收客户端socket连接
@@ -87,6 +91,7 @@ int main(int argc, char* argv[])
 		SOCKET AcceptSocket=accept(ListenSocket,(SOCKADDR*)&addrClient,&len);
 		if(AcceptSocket  == INVALID_SOCKET)break; //出错
 
+		printf("客户端%d连接\n", AcceptSocket);
 		//启动线程
 		DWORD dwThread;
 		HANDLE hThread = CreateThread(NULL,0,ThreadProc,(LPVOID)AcceptSocket,0,&dwThread);
